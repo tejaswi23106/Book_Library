@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Book Library</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    input { margin: 5px; padding: 5px; }
+    button { padding: 5px 10px; margin: 5px; }
+    #authSection, #bookSection { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+
+<h1>📚 Book Library</h1>
+
+<!-- AUTH SECTION -->
+<div id="authSection">
+  <h2>Signup</h2>
+  <input type="text" id="signupUsername" placeholder="Username">
+  <input type="password" id="signupPassword" placeholder="Password">
+  <button onclick="signup()">Signup</button>
+
+  <h2>Login</h2>
+  <input type="text" id="loginUsername" placeholder="Username">
+  <input type="password" id="loginPassword" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<button onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
+
+<hr>
+
+<!-- BOOK SECTION -->
+<div id="bookSection" style="display:none;">
+
+<h2>Add Book</h2>
+<form id="bookForm">
+  <input type="text" id="title" placeholder="Title" required />
+  <input type="text" id="author" placeholder="Author" required />
+  <input type="text" id="genre" placeholder="Genre" required />
+  <input type="number" id="rating" placeholder="Rating (1-5)" step="0.1" />
+  <button type="submit">Add Book</button>
+</form>
+
+<hr>
+
+<h2>Search & Filter</h2>
+<input type="text" id="filterGenre" placeholder="Filter by Genre" />
+<input type="number" id="filterRating" placeholder="Min Rating" step="0.1" />
+<input type="number" id="limit" placeholder="Books per page" value="5" />
+<button onclick="fetchBooks()">Search</button>
+
+<br><br>
+
+<button onclick="prevPage()">Previous</button>
+<span id="pageInfo"></span>
+<button onclick="nextPage()">Next</button>
+
+<hr>
+
+<h2>All Books</h2>
+<ul id="bookList"></ul>
+
+</div>
+
+<script>
+const BOOK_API = "http://localhost:5000/books";
+const AUTH_API = "http://localhost:5000/api/auth";
+
+let currentPage = 1;
+let totalPages = 1;
+
+// AUTH FUNCTIONS
+async function signup() {
+  const username = document.getElementById("signupUsername").value;
+  const password = document.getElementById("signupPassword").value;
+
+  const res = await fetch(`${AUTH_API}/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
+
+async function login() {
+  const username = document.getElementById("loginUsername").value;
+  const password = document.getElementById("loginPassword").value;
+
+  const res = await fetch(`${AUTH_API}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.message || "Login failed");
+    return;
+  }
+
+  localStorage.setItem("token", data.token);
+  alert("Login successful");
+  updateUI();
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  updateUI();
+}
+// UI CONTROL
+function updateUI() {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    document.getElementById("authSection").style.display = "none";
+    document.getElementById("bookSection").style.display = "block";
+    document.getElementById("logoutBtn").style.display = "inline-block";
+    fetchBooks();
+  } else {
+    document.getElementById("authSection").style.display = "block";
+    document.getElementById("bookSection").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "none";
+  }
+}
+
+// ADD BOOK
+document.getElementById("bookForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const token = localStorage.getItem("token");
+  if (!token) return alert("Please login first");
+
+  const book = {
+    title: document.getElementById("title").value,
+    author: document.getElementById("author").value,
+    genre: document.getElementById("genre").value,
+    rating: document.getElementById("rating").value
+      ? Number(document.getElementById("rating").value)
+      : undefined
+  };
+
+  const res = await fetch(BOOK_API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(book)
+  });
+
+  const data = await res.json();
+  alert(data.message);
+  document.getElementById("bookForm").reset();
+  fetchBooks();
+});
+
+// FETCH BOOKS
+async function fetchBooks() {
+  const genre = document.getElementById("filterGenre").value;
+  const rating = document.getElementById("filterRating").value;
+  const limit = document.getElementById("limit").value || 5;
+
+  let url = `${BOOK_API}?page=${currentPage}&limit=${limit}`;
+  if (genre) url += `&genre=${genre}`;
+  if (rating) url += `&rating=${rating}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  totalPages = data.totalPages || 1;
+
+  const list = document.getElementById("bookList");
+  list.innerHTML = "";
+
+  if (!data.books || data.books.length === 0) {
+    list.innerHTML = "<li>No books found</li>";
+    return;
+  }
+
+  data.books.forEach(book => {
+    const li = document.createElement("li");
+    li.innerText =
+      `${book.title} - ${book.author} (${book.genre}) ⭐ ${book.rating || "N/A"}`;
+    list.appendChild(li);
+  });
+
+  document.getElementById("pageInfo").innerText =
+    `Page ${currentPage} of ${totalPages}`;
+}
+
+// PAGINATION
+function nextPage() {
+  if (currentPage < totalPages) {
+    currentPage++;
+    fetchBooks();
+  }
+}
+
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    fetchBooks();
+  }
+}
+
+// Initial check
+updateUI();
+</script>
+
+</body>
+</html>
