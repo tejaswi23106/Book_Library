@@ -5,10 +5,8 @@ const Book = require("../models/Book");
 const protect = require("../middleware/authmiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
 
-
-// ===============================
 // ADD BOOK (ADMIN ONLY)
-// ===============================
+//This route allows only admin users to add a new book to the database.
 
 router.post("/", protect, adminOnly, async (req, res) => {
   try {
@@ -51,10 +49,8 @@ router.post("/", protect, adminOnly, async (req, res) => {
   }
 });
 
-
-// ===============================
 // GET ALL BOOKS (Pagination + Filters)
-// ===============================
+// This route returns books from the database and supports pagination and filtering based on genre and rating.
 
 router.get("/", async (req, res) => {
 
@@ -101,10 +97,8 @@ router.get("/", async (req, res) => {
 
 });
 
-
-// ===============================
 // GET SINGLE BOOK BY ID
-// ===============================
+//This route fetches a specific book using its MongoDB ID.
 
 router.get("/:id", async (req, res) => {
 
@@ -130,6 +124,5 @@ router.get("/:id", async (req, res) => {
   }
 
 });
-
 
 module.exports = router;

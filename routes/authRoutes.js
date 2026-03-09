@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
 // SIGNUP
+//The signup route registers a new user by taking the username and password from the request body and saving it to the MongoDB database.
 router.post("/signup", async (req, res) => {
 
   const { username, password } = req.body;
@@ -33,6 +34,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // LOGIN
+//The login route verifies the user's credentials and generates a JWT token which is used to authenticate future requests.
 router.post("/login", async (req, res) => {
 
   const { username, password } = req.body;
