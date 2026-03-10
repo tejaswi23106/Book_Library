@@ -87,17 +87,15 @@ const AUTH_API = "http://localhost:5000/auth";
 let currentPage = 1;
 let totalPages = 1;
 
-//////////////////////////////////////////////////////
 // SIGNUP
-//////////////////////////////////////////////////////
-
+//async means the function can use await to wait for asynchronous operations like API calls.
 async function signup() {
 
 const username = document.getElementById("signupUsername").value;
 const password = document.getElementById("signupPassword").value;
 
+//This sends a POST request to the backend signup API.//fetch ->calls backend api
 const res = await fetch(`${AUTH_API}/signup`, {
-
 method: "POST",
 
 headers: { "Content-Type": "application/json" },
@@ -112,9 +110,7 @@ alert(data.message || data.error);
 
 }
 
-//////////////////////////////////////////////////////
 // LOGIN
-//////////////////////////////////////////////////////
 
 async function login() {
 
@@ -146,9 +142,7 @@ updateUI();
 
 }
 
-//////////////////////////////////////////////////////
 // LOGOUT
-//////////////////////////////////////////////////////
 
 function logout() {
 
@@ -158,10 +152,7 @@ updateUI();
 
 }
 
-//////////////////////////////////////////////////////
 // UI CONTROL
-//////////////////////////////////////////////////////
-
 function updateUI() {
 
 const token = localStorage.getItem("token");
@@ -184,9 +175,7 @@ document.getElementById("logoutBtn").style.display = "none";
 
 }
 
-//////////////////////////////////////////////////////
 // ADD BOOK (ADMIN ONLY)
-//////////////////////////////////////////////////////
 
 document.getElementById("bookForm").addEventListener("submit", async (e) => {
 
@@ -246,9 +235,7 @@ fetchBooks();
 
 });
 
-//////////////////////////////////////////////////////
 // FETCH BOOKS
-//////////////////////////////////////////////////////
 
 async function fetchBooks() {
 
@@ -262,11 +249,8 @@ if (genre) url += `&genre=${genre}`;
 if (rating) url += `&rating=${rating}`;
 
 const res = await fetch(url);
-
 const data = await res.json();
-
 totalPages = data.totalPages || 1;
-
 const list = document.getElementById("bookList");
 
 list.innerHTML = "";
@@ -295,9 +279,7 @@ document.getElementById("pageInfo").innerText =
 
 }
 
-//////////////////////////////////////////////////////
 // PAGINATION
-//////////////////////////////////////////////////////
 
 function nextPage() {
 
@@ -323,9 +305,7 @@ fetchBooks();
 
 }
 
-//////////////////////////////////////////////////////
 // INITIAL CHECK
-//////////////////////////////////////////////////////
 
 updateUI();
 
